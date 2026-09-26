@@ -1,4 +1,5 @@
 """Convert JSON data (list of dicts or dict of lists) to CSV."""
+
 from __future__ import annotations
 
 import csv
@@ -9,6 +10,7 @@ from typing import Any, Iterable, Sequence
 
 
 def _collect_headers(rows: Iterable[dict]) -> list[str]:
+    """Collect all unique keys across all rows, preserving first-seen order."""
     headers: list[str] = []
     seen: set[str] = set()
     for row in rows:
@@ -20,6 +22,7 @@ def _collect_headers(rows: Iterable[dict]) -> list[str]:
 
 
 def _stringify(value: Any) -> str:
+    """Convert a value to a CSV-safe string."""
     if value is None:
         return ""
     if isinstance(value, bool):
@@ -37,6 +40,7 @@ def json_to_csv(
     include_header: bool = True,
     flatten: bool = False,
 ) -> str:
+    """Convert JSON data to CSV and return it as a string."""
     rows = _normalize(data)
     if flatten:
         rows = [_flatten_row(r) for r in rows]
@@ -66,14 +70,17 @@ def json_string_to_csv(
     output: str | Path | None = None,
     **kwargs: Any,
 ) -> str:
+    """Parse a JSON string and convert it to CSV."""
     return json_to_csv(json.loads(json_string), output=output, **kwargs)
 
 
 def _normalize(data: Any) -> list[dict]:
+    """Normalize input data to a list of dicts."""
     if isinstance(data, list):
         if not all(isinstance(item, dict) for item in data):
             raise TypeError("When data is a list, every item must be a dict.")
         return data
+
     if isinstance(data, dict):
         keys = list(data.keys())
         lengths = {len(v) for v in data.values() if isinstance(v, Sequence)}
@@ -81,10 +88,12 @@ def _normalize(data: Any) -> list[dict]:
             raise ValueError("All lists in dict-of-lists must have the same length.")
         n = lengths.pop() if lengths else 0
         return [{k: data[k][i] for k in keys} for i in range(n)]
+
     raise TypeError("data must be a list of dicts or a dict of lists.")
 
 
 def _flatten_row(row: dict, prefix: str = "") -> dict:
+    """Flatten a nested dict using dot notation."""
     flat: dict[str, Any] = {}
     for key, value in row.items():
         new_key = f"{prefix}{key}"
