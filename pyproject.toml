@@ -29,7 +29,6 @@ Issues = "https://github.com/sarah20-25/json2csv-lite/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
